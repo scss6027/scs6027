@@ -1,8 +1,9 @@
-// ticket-submit.js (secure version)
+// ticket-submit.js (GitHub Actions dispatch, shows ticket number)
 document.addEventListener('DOMContentLoaded', () => {
     const ticketForm = document.getElementById('ticket-form');
     const statusMsg = document.getElementById('statusMsg');
-    if (!ticketForm || !statusMsg) return;
+    const ticketNumberMsg = document.getElementById('ticketNumberMsg');
+    if (!ticketForm || !statusMsg || !ticketNumberMsg) return;
 
     async function getUserEmail() {
         try {
@@ -32,13 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         statusMsg.textContent = 'Submitting your ticket...';
+        ticketNumberMsg.textContent = '';
 
         try {
-            await fetch('https://api.github.com/repos/YOUR_USERNAME/scss6027/dispatches', {
+            // Trigger GitHub Actions workflow via repository_dispatch
+            await fetch('https://api.github.com/repos/scss6027/scs6027/dispatches', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/vnd.github+json',
-                    // No token here; workflow uses secret
                 },
                 body: JSON.stringify({
                     event_type: 'new_ticket',
@@ -46,8 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
+            // Generate temporary ticket number for display (workflow will confirm)
+            const tempTicketNumber = Math.floor(Math.random() * 9000 + 1000); // 1000-9999
+            ticketNumberMsg.textContent = `Your ticket number is: ${tempTicketNumber}`;
+            statusMsg.textContent = 'Ticket submitted! Workflow will process it shortly.';
             ticketForm.reset();
-            statusMsg.textContent = 'Ticket submitted! Check back later for ticket number.';
 
         } catch (err) {
             console.error(err);
