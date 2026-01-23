@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modify Ticket - SCS6027</title>
+
+  <!-- Universal public stylesheet -->
+  <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css">
+
+  <!-- Dynamic includes -->
+  <script src="https://scss6027.github.io/main/include-public.js" defer></script>
+
+  <!-- Authentication & ticket modification logic -->
+  <script src="https://scss6027.github.io/scs6027/js/auth.js" defer></script>
+  <script src="https://scss6027.github.io/scs6027/js/ticket-modify.js" defer></script>
+
+  <style>
+    main {
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    input, textarea {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      font-size: 1rem;
+      width: 100%;
+    }
+    button {
+      max-width: 200px;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      background-color: #f0ad4e;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover { background-color: #ec971f; }
+
+    #statusMsg {
+      margin-top: 12px;
+      font-weight: bold;
+      color: #2b00fe;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Dynamic header -->
+<div id="header-placeholder"></div>
+
+<!-- Dynamic navigation -->
+<div id="nav-placeholder"></div>
+
+<main>
+  <h2>Modify Your Ticket</h2>
+
+  <form id="modify-ticket-form">
+    <label for="ticketNumber">Ticket Number:</label>
+    <input type="text" id="ticketNumber" name="ticketNumber" placeholder="Enter your ticket number" required>
+
+    <label for="subject">New Subject:</label>
+    <input type="text" id="subject" name="subject" placeholder="Enter new subject" required>
+
+    <label for="description">New Description:</label>
+    <textarea id="description" name="description" placeholder="Enter updated description" rows="6" required></textarea>
+
+    <button type="submit">Update Ticket</button>
+  </form>
+
+  <p id="statusMsg"></p>
+</main>
+
+<!-- Dynamic footer -->
+<div id="footer-placeholder"></div>
+
+</body>
+</html>
