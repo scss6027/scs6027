@@ -1,0 +1,56 @@
+name: Ticket Modify Workflow
+
+on:
+  repository_dispatch:
+    types: [modify_ticket]
+
+jobs:
+  modify_ticket:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Parse payload
+        id: parse
+        run: |
+          echo "PAYLOAD=${{ github.event.client_payload }}" >> $GITHUB_ENV
+
+      - name: Load ticket data
+        run: |
+          EMAIL="${{ github.event.client_payload.email }}"
+          TICKET_NUM="${{ github.event.client_payload.ticketNumber }}"
+          NEW_SUBJECT="${{ github.event.client_payload.subject }}"
+          NEW_DESC="${{ github.event.client_payload.description }}"
+
+          TICKET_FILE="scs6027Tickets/${TICKET_NUM}.txt"
+
+          if [ ! -f "$TICKET_FILE" ]; then
+            echo "Ticket file $TICKET_FILE does not exist!"
+            exit 1
+          fi
+
+          # Verify ticket belongs to user
+          OWNER_EMAIL=$(grep "^Submitted by: " "$TICKET_FILE" | cut -d' ' -f3-)
+          if [ "$OWNER_EMAIL" != "$EMAIL" ]; then
+            echo "You are not authorized to modify this ticket."
+            exit 1
+          fi
+
+          # Update the ticket
+          sed -i "/^Subject:/c\Subject: $NEW_SUBJECT" "$TICKET_FILE"
+          # Remove old description lines and append new one
+          awk "/^Description:/ {print; print \"$NEW_DESC\"; next} /^Description:/ {flag=1; next} {if (!flag) print}" "$TICKET_FILE" > "$TICKET_FILE.tmp"
+          mv "$TICKET_FILE.tmp" "$TICKET_FILE"
+
+      - name: Commit and push modifications
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "Modified ticket #${{ github.event.client_payload.ticketNumber }}"
+          branch: main
+          author_name: "Ticket System"
+          author_email: "admin@scss6027.github.io"
+          commit_user_token: ${{ secrets.TicketMasterPAT }}
+
+      - name: Workflow completion
+        run: echo "Ticket #${{ github.event.client_payload.ticketNumber }} successfully modified."
