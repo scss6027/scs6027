@@ -39,17 +39,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const ticketDiv = document.createElement('div');
         ticketDiv.className = 'ticket-item';
 
-        // Simple parsing of txt file
+        // Parse the ticket text
         const lines = ticketText.split('\n');
-        let subject = '';
-        let description = '';
-        lines.forEach(line => {
+        let subject = '', description = '', date = '', submittedBy = '';
+        lines.forEach((line, idx) => {
           if (line.startsWith('Subject:')) subject = line.replace('Subject:', '').trim();
-          if (line.startsWith('Description:')) description = lines.slice(lines.indexOf(line)+1).join('\n').trim();
+          if (line.startsWith('Description:')) description = lines.slice(idx + 1).join('\n').trim();
+          if (line.startsWith('Date:')) date = line.replace('Date:', '').trim();
+          if (line.startsWith('Submitted by:')) submittedBy = line.replace('Submitted by:', '').trim();
         });
 
         ticketDiv.innerHTML = `
           <h3>Ticket #${ticketNum}</h3>
+          <p><strong>Date Submitted:</strong> ${date}</p>
+          <p><strong>Submitted by:</strong> ${submittedBy}</p>
           <p><strong>Subject:</strong> ${subject}</p>
           <p><strong>Description:</strong><br>${description.replace(/\n/g,'<br>')}</p>
         `;
