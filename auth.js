@@ -1,51 +1,63 @@
-// auth.js
+// auth.js — handles login, logout, and session check
+// Works purely on front-end (no server) using auth.json
+
+const AUTH_JSON = "https://scss6027.github.io/scs6027/auth.json"; // path to your JSON
+const SESSION_KEY = "consoleAuth"; // sessionStorage key
 
 document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('login-form');
-    const logoutBtn = document.getElementById('logout-btn');
 
-    // Login
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = loginForm.querySelector('input[name="username"]').value;
-            const password = loginForm.querySelector('input[name="password"]').value;
+  const loginForm = document.getElementById('login-form');
+  const logoutBtn = document.getElementById('logout-btn');
 
-            try {
-                const res = await fetch('https://scss6027.github.io/scs6027/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const result = await res.json();
+  // --- LOGIN ---
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-                if (result.success) {
-                    alert('Login successful!');
-                    window.location.reload();
-                } else {
-                    alert('Login failed: ' + result.message);
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Network error during login.');
-            }
-        });
-    }
+      const email = loginForm.querySelector('input[name="email"]').value.trim();
+      const password = loginForm.querySelector('input[name="password"]').value;
 
-    // Logout
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                const res = await fetch('https://scss6027.github.io/scs6027/api/logout', { method: 'POST' });
-                const result = await res.json();
-                if (result.success) {
-                    alert('Logged out.');
-                    window.location.reload();
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Network error during logout.');
-            }
-        });
-    }
+      try {
+        const res = await fetch(AUTH_JSON);
+        if (!res.ok) throw new Error("Could not load auth.json");
+        const data = await res.json();
+
+        const user = data.users.find(
+          u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
+        );
+
+        if (user) {
+          // success → set session token
+          sessionStorage.setItem(SESSION_KEY, email);
+          alert('Login successful!');
+          window.location.href = "console-main.html"; // redirect to console
+        } else {
+          alert('Login failed: Invalid email or password');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Network or JSON error during login');
+      }
+    });
+  }
+
+  // --- LOGOUT ---
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      sessionStorage.removeItem(SESSION_KEY);
+      alert('Logged out successfully');
+      window.location.href = "login.html"; // redirect to login
+    });
+  }
+
 });
+
+// --- FUNCTION: check session for console pages ---
+function checkSession(redirectIfMissing = true) {
+  const email = sessionStorage.getItem(SESSION_KEY);
+  if (!email && redirectIfMissing) {
+    window.location.href = "login.html";
+    return false;
+  }
+  return true; // authorized
+}
