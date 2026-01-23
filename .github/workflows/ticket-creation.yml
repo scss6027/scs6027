@@ -63,3 +63,15 @@ jobs:
 
       - name: Notify workflow complete
         run: echo "Ticket #${{ env.NEXT_TICKET }} successfully created and committed."
+
+      - name: Update latestTickets.json
+        run: |
+          FILE="scs6027Tickets/latestTickets.json"
+          if [ ! -f $FILE ]; then
+            echo "{}" > $FILE
+          fi
+          TMP=$(mktemp)
+          EMAIL="${{ github.event.client_payload.email }}"
+          TICKET="${{ env.NEXT_TICKET }}"
+          jq --arg email "$EMAIL" --arg ticket "$TICKET" '.[$email]=$ticket' $FILE > $TMP
+          mv $TMP $FILE
