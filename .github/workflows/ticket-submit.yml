@@ -1,0 +1,72 @@
+name: Ticket Submission
+
+on:
+  repository_dispatch:
+    types: [new_ticket]
+
+jobs:
+  save-ticket:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js (needed for JSON manipulation)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Process ticket
+        id: ticket
+        run: |
+          mkdir -p scs6027Tickets
+          
+          # Load the payload from repository_dispatch
+          echo "${{ github.event.client_payload }}" > payload.json
+          
+          EMAIL=$(jq -r '.email' payload.json)
+          SUBJECT=$(jq -r '.subject' payload.json)
+          DESCRIPTION=$(jq -r '.description' payload.json)
+          TIMESTAMP=$(jq -r '.timestamp' payload.json)
+          
+          # Determine next sequential ticket number
+          LAST_TICKET=$(ls scs6027Tickets | grep '\.txt$' | sort -n | tail -1 || echo "0000.txt")
+          LAST_NUM=$(basename $LAST_TICKET .txt)
+          NEXT_NUM=$(printf "%04d" $((10#$LAST_NUM + 1)))
+          TICKET_FILE="scs6027Tickets/${NEXT_NUM}.txt"
+          
+          # Save ticket content
+          echo "Ticket #: $NEXT_NUM" > "$TICKET_FILE"
+          echo "Email: $EMAIL" >> "$TICKET_FILE"
+          echo "Timestamp: $TIMESTAMP" >> "$TICKET_FILE"
+          echo "Subject: $SUBJECT" >> "$TICKET_FILE"
+          echo -e "Description:\n$DESCRIPTION" >> "$TICKET_FILE"
+
+          # Update user tickets mapping
+          USERS_FILE="usersTickets.json"
+          if [ ! -f "$USERS_FILE" ]; then
+            echo "{}" > "$USERS_FILE"
+          fi
+
+          # Add ticket number to the user's list
+          node -e "
+            const fs = require('fs');
+            const usersFile = '$USERS_FILE';
+            const users = JSON.parse(fs.readFileSync(usersFile));
+            const email = '$EMAIL';
+            const ticketNum = '$NEXT_NUM';
+            if (!users[email]) users[email] = [];
+            users[email].push(ticketNum);
+            fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
+          "
+
+          echo "Ticket $NEXT_NUM saved."
+
+      - name: Commit and push ticket
+        run: |
+          git config --global user.name "SCS6027 Bot"
+          git config --global user.email "admin@scss6027.github.io"
+          git add scs6027Tickets usersTickets.json
+          git commit -m "Add ticket $NEXT_NUM for $EMAIL"
+          git push
