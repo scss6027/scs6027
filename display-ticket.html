@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>View Your Tickets - SCS6027</title>
+
+  <!-- Universal public stylesheet from MAIN -->
+  <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css">
+
+  <!-- Dynamic includes -->
+  <script src="https://scss6027.github.io/main/include-public.js" defer></script>
+
+  <!-- Authentication & ticket display logic -->
+  <script src="https://scss6027.github.io/scs6027/js/auth.js" defer></script>
+  <script src="https://scss6027.github.io/scs6027/js/ticket-display.js" defer></script>
+
+  <style>
+    main {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    .ticket-list {
+      margin-top: 20px;
+    }
+    .ticket-item {
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background-color: #f9f9f9;
+    }
+    .ticket-item h3 {
+      margin-top: 0;
+      color: #2b00fe;
+    }
+    .ticket-item p {
+      margin: 4px 0;
+    }
+    .no-tickets {
+      font-weight: bold;
+      color: red;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Dynamic header -->
+<div id="header-placeholder"></div>
+
+<!-- Dynamic nav -->
+<div id="nav-placeholder"></div>
+
+<main>
+  <h2>Your Submitted Tickets</h2>
+  <div id="ticketContainer" class="ticket-list">
+    <p class="no-tickets">Loading your tickets...</p>
+  </div>
+</main>
+
+<!-- Dynamic footer -->
+<div id="footer-placeholder"></div>
+
+</body>
+</html>
