@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login - SCS6027</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Register - SCS6027</title>
 
   <!-- Universal public stylesheet from MAIN -->
   <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css">
@@ -12,23 +13,83 @@
 
   <!-- Authentication logic -->
   <script src="https://scss6027.github.io/scs6027/js/auth.js" defer></script>
+
+  <style>
+    main {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    input {
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 1rem;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    hr {
+      margin: 30px 0;
+    }
+
+    h2 {
+      text-align: center;
+      text-decoration: underline;
+      margin-bottom: 10px;
+    }
+
+    #loginStatus {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      color: red;
+    }
+  </style>
 </head>
 <body>
 
   <!-- Dynamic header -->
-  <div id="header"></div>
+  <div id="header-placeholder"></div>
 
   <!-- Dynamic nav -->
-  <div id="nav"></div>
+  <div id="nav-placeholder"></div>
 
-  <main style="max-width: 600px; margin: auto; padding: 20px;">
-    <h2>Login with Gmail</h2>
-    <button id="loginBtn">Login with Google</button>
+  <main>
+    <!-- LOGIN FORM -->
+    <h2>Login</h2>
+    <form id="login-form">
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <hr>
+
+    <!-- REGISTER FORM -->
+    <h2>Register</h2>
+    <form id="register-form">
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Register</button>
+    </form>
+
     <p id="loginStatus"></p>
   </main>
 
   <!-- Dynamic footer -->
-  <div id="footer"></div>
+  <div id="footer-placeholder"></div>
 
 </body>
 </html>
