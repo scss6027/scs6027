@@ -1,0 +1,65 @@
+name: Ticket Creation Workflow
+
+on:
+  repository_dispatch:
+    types: [new_ticket]
+
+jobs:
+  create_ticket:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Parse payload
+        id: parse
+        run: |
+          echo "PAYLOAD=${{ github.event.client_payload }}" >> $GITHUB_ENV
+
+      - name: Load ticket data
+        run: |
+          # Create folder if it doesn't exist
+          mkdir -p scs6027Tickets
+          # Create users JSON if missing
+          if [ ! -f scs6027UsersTickets.json ]; then
+            echo '{}' > scs6027UsersTickets.json
+          fi
+
+          # Generate next ticket number
+          LAST=$(ls scs6027Tickets | sort | tail -1 | sed 's/\.txt//' || echo '0000')
+          NEXT=$(printf "%04d" $((10#$LAST + 1)))
+          echo "NEXT_TICKET=$NEXT" >> $GITHUB_ENV
+
+          # Save ticket content
+          echo "Ticket Number: $NEXT" > scs6027Tickets/$NEXT.txt
+          echo "Date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> scs6027Tickets/$NEXT.txt
+          echo "Submitted by: ${{ github.event.client_payload.email }}" >> scs6027Tickets/$NEXT.txt
+          echo "Subject: ${{ github.event.client_payload.subject }}" >> scs6027Tickets/$NEXT.txt
+          echo "Description:" >> scs6027Tickets/$NEXT.txt
+          echo "${{ github.event.client_payload.description }}" >> scs6027Tickets/$NEXT.txt
+
+      - name: Update users JSON
+        run: |
+          EMAIL="${{ github.event.client_payload.email }}"
+          TICKET_NUM="${{ env.NEXT_TICKET }}"
+          TMP=$(mktemp)
+          jq --arg email "$EMAIL" --arg ticket "$TICKET_NUM" \
+             ' .[$email] += [$ticket] // {($email): [$ticket]} ' scs6027UsersTickets.json > $TMP
+          mv $TMP scs6027UsersTickets.json
+
+      - name: Commit and push
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "New ticket #${{ env.NEXT_TICKET }} submitted"
+          branch: main
+          author_name: "Ticket System"
+          author_email: "admin@scss6027.github.io"
+          commit_user_token: ${{ secrets.TicketMasterPAT }}
+
+      - name: Notify workflow complete
+        run: echo "Ticket #${{ env.NEXT_TICKET }} successfully created and committed."
