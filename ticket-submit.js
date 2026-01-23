@@ -1,10 +1,11 @@
-// ticket-submit.js (real ticket number display)
+// ticket-submit.js (SCS6027 – real ticket number + initial status)
 document.addEventListener('DOMContentLoaded', () => {
     const ticketForm = document.getElementById('ticket-form');
     const statusMsg = document.getElementById('statusMsg');
     const ticketNumberMsg = document.getElementById('ticketNumberMsg');
     if (!ticketForm || !statusMsg || !ticketNumberMsg) return;
 
+    // Get logged-in user email
     async function getUserEmail() {
         try {
             const resp = await fetch('https://scss6027.github.io/scs6027/auth.json');
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Get latest ticket number for this user (from latestTickets.json)
     async function getLatestTicket(email) {
         try {
             const resp = await fetch('https://scss6027.github.io/scs6027/scs6027Tickets/latestTickets.json');
@@ -40,7 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = {
             email: userEmail,
             subject: formData.get('subject'),
-            description: formData.get('description')
+            description: formData.get('description'),
+            status: "Open"  // Automatically add initial status field
         };
 
         statusMsg.textContent = 'Submitting your ticket...';
