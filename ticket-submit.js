@@ -1,76 +1,68 @@
 // ticket-submit.js
+
 document.addEventListener('DOMContentLoaded', () => {
-  const ticketForm = document.getElementById('ticket-form');
-  const statusMsg = document.getElementById('statusMsg');
-  const ticketNumberMsg = document.getElementById('ticketNumberMsg');
+    const ticketForm = document.getElementById('ticket-form');
+    const statusMsg = document.getElementById('statusMsg');
+    if (!ticketForm || !statusMsg) return;
 
-  if (!ticketForm) return;
-
-  ticketForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // Ensure user is logged in via auth.js
-    if (!window.loggedInEmail) {
-      statusMsg.textContent = "You must be logged in to submit a ticket.";
-      statusMsg.style.color = "red";
-      return;
-    }
-
-    const subject = document.getElementById('subject').value.trim();
-    const description = document.getElementById('description').value.trim();
-
-    if (!subject || !description) {
-      statusMsg.textContent = "Please fill in all fields.";
-      statusMsg.style.color = "red";
-      return;
-    }
-
-    // Predict next ticket number based on last known number
-    const lastTicket = localStorage.getItem('lastTicket') || "0000";
-    const nextNum = String(parseInt(lastTicket, 10) + 1).padStart(4, '0');
-    localStorage.setItem('lastTicket', nextNum);
-
-    // Display immediately
-    ticketNumberMsg.innerHTML = `
-      Your ticket number is <strong>${nextNum}</strong>.<br>
-      Please note it down. No emails are sent automatically.
-    `;
-
-    const payload = {
-      email: window.loggedInEmail,
-      subject,
-      description,
-      timestamp: new Date().toISOString()
-    };
-
-    try {
-      statusMsg.textContent = "Submitting your ticket...";
-      statusMsg.style.color = "black";
-
-      await fetch(
-        'https://api.github.com/repos/scss6027/scs6027/dispatches',
-        {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/vnd.github.v3+json',
-            'Authorization': `token YOUR_GITHUB_PAT`, // handled via secret in workflow
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            event_type: 'new_ticket',
-            client_payload: payload
-          })
+    // Load logged-in user email from auth.json
+    async function getUserEmail() {
+        try {
+            const resp = await fetch('https://scss6027.github.io/scs6027/auth.json');
+            const data = await resp.json();
+            return data.loggedInEmail || null;
+        } catch (err) {
+            console.error('Error loading auth.json:', err);
+            return null;
         }
-      );
-
-      statusMsg.textContent = "Ticket submitted successfully!";
-      statusMsg.style.color = "green";
-      ticketForm.reset();
-
-    } catch (err) {
-      console.error(err);
-      statusMsg.textContent = "Network or GitHub error: Could not submit ticket.";
-      statusMsg.style.color = "red";
     }
-  });
+
+    ticketForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const userEmail = await getUserEmail();
+        if (!userEmail) {
+            alert('You must be logged in to submit a ticket.');
+            return;
+        }
+
+        const formData = new FormData(ticketForm);
+        const subject = formData.get('subject');
+        const description = formData.get('description');
+
+        // Payload to send to GitHub Actions
+        const payload = {
+            email: userEmail,
+            subject: subject,
+            description: description
+        };
+
+        statusMsg.textContent = 'Submitting your ticket...';
+
+        try {
+            const resp = await fetch('https://api.github.com/repos/YOUR_USERNAME/scss6027/dispatches', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/vnd.github+json',
+                    'Authorization': 'Bearer ' + YOUR_GITHUB_PERSONAL_ACCESS_TOKEN
+                },
+                body: JSON.stringify({
+                    event_type: 'new_ticket',
+                    client_payload: payload
+                })
+            });
+
+            if (resp.ok) {
+                ticketForm.reset();
+                statusMsg.textContent = `Ticket submitted! Please note your ticket for reference. GitHub will assign a number shortly.`;
+            } else {
+                const errText = await resp.text();
+                console.error(errText);
+                statusMsg.textContent = 'Error submitting ticket. Check console.';
+            }
+        } catch (err) {
+            console.error(err);
+            statusMsg.textContent = 'Network error. Could not submit ticket.';
+        }
+    });
 });
