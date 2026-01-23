@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Modify Ticket - SCS6027</title>
 
-  <!-- Universal public stylesheet -->
+  <!-- Universal stylesheet -->
   <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css">
 
   <!-- Dynamic includes -->
   <script src="https://scss6027.github.io/main/include-public.js" defer></script>
 
-  <!-- Authentication & ticket modification logic -->
+  <!-- Auth & Ticket Modify JS -->
   <script src="https://scss6027.github.io/scs6027/js/auth.js" defer></script>
   <script src="https://scss6027.github.io/scs6027/js/ticket-modify.js" defer></script>
 
@@ -38,17 +38,16 @@
       padding: 10px;
       border: none;
       border-radius: 6px;
-      background-color: #f0ad4e;
+      background-color: #fbbc05;
       color: white;
       font-size: 1rem;
       cursor: pointer;
     }
-    button:hover { background-color: #ec971f; }
+    button:hover { background-color: #e2a903; }
 
     #statusMsg {
       margin-top: 12px;
       font-weight: bold;
-      color: #2b00fe;
     }
   </style>
 </head>
@@ -61,7 +60,7 @@
 <div id="nav-placeholder"></div>
 
 <main>
-  <h2>Modify Your Ticket</h2>
+  <h2>Modify Your Support Ticket</h2>
 
   <form id="modify-ticket-form">
     <label for="ticketNumber">Ticket Number:</label>
@@ -71,9 +70,9 @@
     <input type="text" id="subject" name="subject" placeholder="Enter new subject" required>
 
     <label for="description">New Description:</label>
-    <textarea id="description" name="description" placeholder="Enter updated description" rows="6" required></textarea>
+    <textarea id="description" name="description" placeholder="Enter new description" rows="6" required></textarea>
 
-    <button type="submit">Update Ticket</button>
+    <button type="submit">Modify Ticket</button>
   </form>
 
   <p id="statusMsg"></p>
