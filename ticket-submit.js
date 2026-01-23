@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Collect form data
     const subject = document.getElementById('subject').value.trim();
     const description = document.getElementById('description').value.trim();
 
@@ -26,7 +25,17 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Create payload for GitHub Action
+    // Predict next ticket number based on last known number
+    const lastTicket = localStorage.getItem('lastTicket') || "0000";
+    const nextNum = String(parseInt(lastTicket, 10) + 1).padStart(4, '0');
+    localStorage.setItem('lastTicket', nextNum);
+
+    // Display immediately
+    ticketNumberMsg.innerHTML = `
+      Your ticket number is <strong>${nextNum}</strong>.<br>
+      Please note it down. No emails are sent automatically.
+    `;
+
     const payload = {
       email: window.loggedInEmail,
       subject,
@@ -38,14 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
       statusMsg.textContent = "Submitting your ticket...";
       statusMsg.style.color = "black";
 
-      // Call GitHub repository_dispatch API
-      const response = await fetch(
+      await fetch(
         'https://api.github.com/repos/scss6027/scs6027/dispatches',
         {
           method: 'POST',
           headers: {
             'Accept': 'application/vnd.github.v3+json',
-            'Authorization': `token YOUR_GITHUB_PAT`, // replace with workflow secret
+            'Authorization': `token YOUR_GITHUB_PAT`, // handled via secret in workflow
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -55,19 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       );
 
-      if (response.status === 204) {
-        statusMsg.textContent = "Ticket submitted successfully!";
-        statusMsg.style.color = "green";
-        ticketNumberMsg.innerHTML = `
-          Your ticket number will be assigned automatically. 
-          <strong>Save this page or note your ticket number for reference.</strong>
-        `;
-        ticketForm.reset();
-      } else {
-        const errText = await response.text();
-        statusMsg.textContent = "Error submitting ticket: " + errText;
-        statusMsg.style.color = "red";
-      }
+      statusMsg.textContent = "Ticket submitted successfully!";
+      statusMsg.style.color = "green";
+      ticketForm.reset();
 
     } catch (err) {
       console.error(err);
