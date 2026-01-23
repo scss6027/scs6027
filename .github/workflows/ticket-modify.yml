@@ -2,7 +2,11 @@ name: Ticket Modify Workflow
 
 on:
   repository_dispatch:
-    types: [modify_ticket]
+    types:
+      - modify_ticket
+
+permissions:
+  contents: write
 
 jobs:
   modify_ticket:
@@ -13,7 +17,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate and load ticket
+        shell: bash
         run: |
+          set -e
+
           EMAIL="${{ github.event.client_payload.email }}"
           TICKET_NUM="${{ github.event.client_payload.ticketNumber }}"
           COMMENT="${{ github.event.client_payload.comment }}"
@@ -35,12 +42,12 @@ jobs:
 
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-          # Append comment (before status)
+          # Insert comment above Status line
           if [ -n "$COMMENT" ]; then
             sed -i "/^Status:/i\\[$TIMESTAMP] $EMAIL: $COMMENT" "$TICKET_FILE"
           fi
 
-          # Update status (must remain last line)
+          # Ensure Status is always the final line
           if [ -n "$NEW_STATUS" ]; then
             sed -i "/^Status:/d" "$TICKET_FILE"
             echo "Status: $NEW_STATUS" >> "$TICKET_FILE"
@@ -52,7 +59,7 @@ jobs:
           commit_message: "Updated ticket #${{ github.event.client_payload.ticketNumber }}"
           branch: main
           author_name: "Ticket System"
-          author_email: "admin@scss6027.github.io"
+          author_email: "admin@scs6027.github.io"
           commit_user_token: ${{ secrets.TicketMasterPAT }}
 
       - name: Done
