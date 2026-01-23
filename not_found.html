@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found - 404</title>
+
+  <!-- Universal public stylesheet from MAIN -->
+  <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css" />
+
+  <!-- Dynamic includes -->
+  <script src="https://scss6027.github.io/main/include-public.js" defer></script>
+
+  <style>
+    /* Page-specific styles for 404 */
+    .not-found {
+      text-align: center;
+      margin: 60px auto;
+      font-family: Georgia, serif; /* match main public font */
+      max-width: 600px;
+      padding: 0 20px;
+    }
+
+    .not-found h1 {
+      font-size: 2.5em;
+      color: red;
+    }
+
+    .not-found p {
+      font-size: 1.2em;
+      margin-top: 12px;
+    }
+
+    .not-found a {
+      text-decoration: underline;
+      color: #3367D6; /* match main link color */
+    }
+
+    .not-found a:hover {
+      color: #0B8043; /* match main hover color */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dynamic header -->
+  <div id="header-placeholder"></div>
+
+  <!-- Dynamic nav -->
+  <div id="nav-placeholder"></div>
+
+  <main>
+    <div class="not-found">
+      <h1>404 – Page Not Found</h1>
+      <p>Oops! The page you’re looking for doesn’t exist or may have been moved.</p>
+      <p><a href="index.html">Click here to return to the homepage</a></p>
+    </div>
+  </main>
+
+  <!-- Dynamic footer -->
+  <div id="footer-placeholder"></div>
+
+</body>
+</html>
