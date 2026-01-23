@@ -1,4 +1,4 @@
-// ticket-submit.js (GitHub Actions dispatch, shows ticket number)
+// ticket-submit.js (real ticket number display)
 document.addEventListener('DOMContentLoaded', () => {
     const ticketForm = document.getElementById('ticket-form');
     const statusMsg = document.getElementById('statusMsg');
@@ -10,6 +10,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const resp = await fetch('https://scss6027.github.io/scs6027/auth.json');
             const data = await resp.json();
             return data.loggedInEmail || null;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    }
+
+    async function getLatestTicket(email) {
+        try {
+            const resp = await fetch('https://scss6027.github.io/scs6027/scs6027Tickets/latestTickets.json');
+            const data = await resp.json();
+            return data[email] || null;
         } catch (err) {
             console.error(err);
             return null;
@@ -39,20 +50,26 @@ document.addEventListener('DOMContentLoaded', () => {
             // Trigger GitHub Actions workflow via repository_dispatch
             await fetch('https://api.github.com/repos/scss6027/scs6027/dispatches', {
                 method: 'POST',
-                headers: {
-                    'Accept': 'application/vnd.github+json',
-                },
+                headers: { 'Accept': 'application/vnd.github+json' },
                 body: JSON.stringify({
                     event_type: 'new_ticket',
                     client_payload: payload
                 })
             });
 
-            // Generate temporary ticket number for display (workflow will confirm)
-            const tempTicketNumber = Math.floor(Math.random() * 9000 + 1000); // 1000-9999
-            ticketNumberMsg.textContent = `Your ticket number is: ${tempTicketNumber}`;
-            statusMsg.textContent = 'Ticket submitted! Workflow will process it shortly.';
-            ticketForm.reset();
+            // Wait a few seconds for the workflow to commit the new ticket
+            statusMsg.textContent = 'Ticket submitted! Retrieving ticket number...';
+            setTimeout(async () => {
+                const latest = await getLatestTicket(userEmail);
+                if (latest) {
+                    ticketNumberMsg.textContent = `Your ticket number is: ${latest}`;
+                    statusMsg.textContent = 'Ticket submitted successfully!';
+                    ticketForm.reset();
+                } else {
+                    ticketNumberMsg.textContent = '';
+                    statusMsg.textContent = 'Ticket submitted! Could not retrieve ticket number yet.';
+                }
+            }, 8000); // 8 seconds delay for workflow to commit
 
         } catch (err) {
             console.error(err);
