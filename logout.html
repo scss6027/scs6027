@@ -1,9 +1,12 @@
+---
+layout: null
+---
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Logout - SCS6027</title>
+  <title>User Logout - SCSS6027</title>
 
   <!-- Universal public stylesheet from MAIN -->
   <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css">
@@ -11,16 +14,16 @@
   <!-- Dynamic includes from MAIN -->
   <script src="https://scss6027.github.io/main/include-public.js" defer></script>
 
-  <!-- Authentication / logout logic -->
-  <script src="https://scss6027.github.io/scs6027/js/auth.js" defer></script>
-
   <style>
-    /* Minimal page-specific styles */
     main {
       max-width: 500px;
-      margin: auto;
-      padding: 20px;
+      margin: 80px auto;
+      padding: 30px;
       text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      background-color: #fff;
     }
 
     #logoutMsg {
@@ -30,20 +33,6 @@
       margin-top: 20px;
     }
   </style>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Call logout function from auth.js
-      if (typeof logoutUser === 'function') {
-        logoutUser(); // expects auth.js exposes logoutUser()
-      }
-
-      // Redirect after 3 seconds
-      setTimeout(() => {
-        window.location.href = 'login.html';
-      }, 3000);
-    });
-  </script>
 </head>
 <body>
 
@@ -54,14 +43,27 @@
   <div id="nav"></div>
 
   <main>
-    <h2>Logging Out...</h2>
+    <h2>User Logout</h2>
     <p id="logoutMsg">
-      You have been successfully logged out. Redirecting to login page...
+      Logging out of your session...
     </p>
+    <p>Redirecting to the login page in 2 seconds.</p>
   </main>
 
   <!-- Dynamic footer -->
   <div id="footer"></div>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Wipe ONLY the user login session keys
+      sessionStorage.removeItem("consoleAuth");
+      sessionStorage.removeItem("scss_admin_session");
+
+      // 2. Redirect back to login.html
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2000);
+    });
+  </script>
 </body>
 </html>
