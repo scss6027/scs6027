@@ -5,67 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Saphah Central Support</title>
 
-  <!-- Universal public stylesheet from MAIN -->
-  <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css" />
+  <!-- Security Check: Must be the very first thing that runs -->
+  <script>
+    if (!sessionStorage.getItem('scss_admin_session')) {
+      window.location.href = "login.html";
+    }
+  </script>
 
-  <!-- Load shared public includes -->
+  <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css" />
   <script src="https://scss6027.github.io/main/include-public.js" defer></script>
 
   <style>
-    /* Page-specific styles only */
-    .urgent {
-      color: red;
-      margin-top: 20px;
-    }
-
+    .urgent { color: red; margin-top: 20px; }
     .whatsapp-chat {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-family: Arial, sans-serif;
-      font-size: 16px;
-      font-weight: bold;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      font-family: Arial, sans-serif; font-size: 16px; font-weight: bold;
       background: linear-gradient(135deg, rgb(37,211,102), rgb(18,140,126));
-      border-radius: 12px;
-      box-shadow: rgba(0,0,0,0.2) 0px 4px 10px;
-      margin: 10px auto;
-      max-width: 320px;
-      padding: 12px 20px;
-      text-align: center;
-      color: white;
+      border-radius: 12px; box-shadow: rgba(0,0,0,0.2) 0px 4px 10px;
+      margin: 10px auto; max-width: 320px; padding: 12px 20px; text-align: center; color: white;
     }
-
-    .whatsapp-chat img {
-      border-radius: 6px;
-      height: 32px;
-      width: 32px;
-    }
-
-    .hashtags {
-      font-size: x-large;
-      font-weight: bold;
-      margin-top: 2em;
-    }
-
-    .hashtags + div {
-      font-size: large;
-      font-weight: 400;
-      margin-top: 0.5em;
+    .whatsapp-chat img { border-radius: 6px; height: 32px; width: 32px; }
+    .hashtags { font-size: x-large; font-weight: bold; margin-top: 2em; }
+    .hashtags + div { font-size: large; font-weight: 400; margin-top: 0.5em; }
+    
+    /* Logout button style */
+    #logout-btn {
+      float: right; background: #ff4444; color: white; border: none;
+      padding: 5px 15px; border-radius: 5px; cursor: pointer; margin: 10px;
     }
   </style>
 </head>
 
 <body>
-
-  <!-- Dynamic header -->
+  <button id="logout-btn" onclick="logout()">LOGOUT</button>
   <div id="header"></div>
-
-  <!-- Dynamic nav -->
   <div id="nav"></div>
 
   <main style="max-width: 800px; margin: auto; padding: 20px;">
-
     <h1 class="page-title">SAPHAH CENTRAL SUPPORT</h1>
     <h1 class="subtitle">HOW CAN WE HELP YOU?</h1>
 
@@ -80,20 +56,13 @@
       or use the form below (on full website view).
     </div>
 
-    <!-- WhatsApp Chat -->
     <div class="whatsapp-chat">
-      <img
-        alt="WhatsApp Logo"
-        src="https://scss6027.github.io/scs6027/WhatsAppLogo.png"
-      />
-      <a href="https://wa.me/27764172774" target="_blank">
-        Chat with us on WhatsApp
-      </a>
+      <img alt="WhatsApp Logo" src="https://scss6027.github.io/scs6027/WhatsAppLogo.png" />
+      <a href="https://wa.me/27764172774" target="_blank">Chat with us on WhatsApp</a>
     </div>
 
     <hr />
 
-    <!-- Coverage Section -->
     <fieldset class="coverage">
       <h3>WEBSITE SUPPORT FOR:</h3>
       <ul>
@@ -114,13 +83,8 @@
 
     <hr />
 
-    <!-- SEO Section -->
     <div class="seo-section">
-      <h2>
-        <span style="font-size:x-large; text-decoration:underline;">
-          SEARCH ENGINE OPTIMIZATION
-        </span>
-      </h2>
+      <h2><span style="font-size:x-large; text-decoration:underline;">SEARCH ENGINE OPTIMIZATION</span></h2>
       <ol class="seo-list">
         <li><a href="https://www.activesearchresults.com/help/about.php" target="_blank">Active Search Results</a></li>
         <li><a href="https://www.freewebsubmission.com" target="_blank">Free Web Submission</a></li>
@@ -132,11 +96,15 @@
 
     <div class="hashtags">MAIN HASHTAG:</div>
     <div>#SaphahSupport2024</div>
-
   </main>
 
-  <!-- Dynamic footer -->
   <div id="footer"></div>
 
+  <script>
+    function logout() {
+      sessionStorage.removeItem('scss_admin_session');
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>
