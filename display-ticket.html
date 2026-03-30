@@ -1,68 +1,103 @@
+---
+layout: null
+---
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>View Your Tickets - SCS6027</title>
+  <title>View Your Tickets - SCSS6027</title>
 
   <!-- Universal public stylesheet from MAIN -->
   <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css">
 
+  <!-- SECURITY: Check session immediately before rendering anything -->
+  <script src="js/auth.js"></script>
+  <script>
+    // Redirect if not logged in
+    const currentEmail = sessionStorage.getItem("consoleAuth");
+    if (!currentEmail) {
+      window.location.href = "login.html";
+    }
+  </script>
+
   <!-- Dynamic includes -->
   <script src="https://scss6027.github.io/main/include-public.js" defer></script>
 
-  <!-- Authentication & ticket display logic -->
-  <script src="https://scss6027.github.io/scs6027/js/auth.js" defer></script>
-  <script src="https://scss6027.github.io/scs6027/js/ticket-display.js" defer></script>
-
   <style>
-    main {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-    }
-    .ticket-list {
-      margin-top: 20px;
-    }
+    main { max-width: 800px; margin: auto; padding: 20px; }
+    .ticket-list { margin-top: 20px; }
     .ticket-item {
-      border: 1px solid #aaa;
-      border-radius: 6px;
-      padding: 12px;
-      margin-bottom: 12px;
-      background-color: #f9f9f9;
+      border: 1px solid #00ff41; border-radius: 6px; padding: 15px;
+      margin-bottom: 12px; background-color: #000; color: #00ff41;
+      font-family: monospace; box-shadow: 0 0 5px #00ff41;
     }
-    .ticket-item h3 {
-      margin-top: 0;
-      color: #2b00fe;
-    }
-    .ticket-item p {
-      margin: 4px 0;
-    }
-    .no-tickets {
-      font-weight: bold;
-      color: red;
-      text-align: center;
-      margin-top: 20px;
-    }
+    .ticket-item h3 { margin-top: 0; color: #00ff41; text-decoration: underline; }
+    .ticket-item p { margin: 6px 0; }
+    .status-badge { font-weight: bold; padding: 2px 8px; border: 1px solid #00ff41; border-radius: 4px; }
+    .no-tickets { font-weight: bold; color: #ff3333; text-align: center; margin-top: 20px; }
+    #logout-btn { float: right; padding: 10px; background: #ff3333; color: white; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<!-- Dynamic header -->
-<div id="header-placeholder"></div>
+<button id="logout-btn" onclick="logout()">LOGOUT</button>
 
-<!-- Dynamic nav -->
+<div id="header-placeholder"></div>
 <div id="nav-placeholder"></div>
 
 <main>
-  <h2>Your Submitted Tickets</h2>
+  <h2>System Tickets Registry</h2>
+  <p>Authorized Operator: <span id="operator-email" style="color: #00ff41;"></span></p>
+  
   <div id="ticketContainer" class="ticket-list">
-    <p class="no-tickets">Loading your tickets...</p>
+    <p class="no-tickets">SYSTEM INITIALIZING... FETCHING RECORDS...</p>
   </div>
 </main>
 
-<!-- Dynamic footer -->
 <div id="footer-placeholder"></div>
+
+<script>
+  // 1. INJECT DATA FROM _data/tickets.json (The Source of Truth)
+  const allTickets = {{ site.data.tickets | jsonify }};
+  const userEmail = sessionStorage.getItem("consoleAuth");
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('operator-email').textContent = userEmail;
+    displayTickets();
+  });
+
+  function displayTickets() {
+    const container = document.getElementById('ticketContainer');
+    
+    // 2. FILTER TICKETS
+    // Only show tickets belonging to the logged-in user 
+    // (Or show all if you are the main admin email)
+    const filteredTickets = allTickets.filter(t => 
+      t.EmailAddress.toLowerCase() === userEmail.toLowerCase()
+    );
+
+    if (filteredTickets.length === 0) {
+      container.innerHTML = '<p class="no-tickets">NO RECORDS FOUND FOR THIS IDENTITY.</p>';
+      return;
+    }
+
+    // 3. RENDER TICKETS
+    container.innerHTML = ''; // Clear loading message
+    filteredTickets.forEach(t => {
+      const ticketDiv = document.createElement('div');
+      ticketDiv.className = 'ticket-item';
+      ticketDiv.innerHTML = `
+        <h3>TICKET #${t.TicketNumber}</h3>
+        <p><strong>SUBJECT:</strong> ${t.Description}</p>
+        <p><strong>SUBMITTED BY:</strong> ${t.Name}</p>
+        <p><strong>DATE:</strong> ${new Date(t.Created).toLocaleString()}</p>
+        <p><strong>STATUS:</strong> <span class="status-badge">${t.Status.toUpperCase()}</span></p>
+      `;
+      container.appendChild(ticketDiv);
+    });
+  }
+</script>
 
 </body>
 </html>
