@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login / Register - SCS6027</title>
+  <title>Login - SCSS6027</title>
 
   <!-- Universal public stylesheet from MAIN -->
   <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css">
@@ -11,85 +11,68 @@
   <!-- Dynamic includes -->
   <script src="https://scss6027.github.io/main/include-public.js" defer></script>
 
-  <!-- Authentication logic -->
-  <script src="https://scss6027.github.io/scs6027/js/auth.js" defer></script>
-
   <style>
-    main {
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 20px;
-    }
-
-    input {
-      margin: 5px 0;
-      padding: 10px;
-      font-size: 1rem;
-    }
-
-    button {
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    hr {
-      margin: 30px 0;
-    }
-
-    h2 {
-      text-align: center;
-      text-decoration: underline;
-      margin-bottom: 10px;
-    }
-
-    #loginStatus {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
-      color: red;
-    }
+    body { background-color: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; }
+    main { max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #00ff41; box-shadow: 0 0 15px #00ff41; }
+    form { display: flex; flex-direction: column; }
+    h2 { text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+    input { margin: 10px 0; padding: 12px; background: #000; border: 1px solid #00ff41; color: #00ff41; outline: none; }
+    button { margin-top: 15px; padding: 12px; background: #00ff41; color: #000; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
+    button:hover { background: #008f11; }
+    #loginStatus { text-align: center; margin-top: 15px; font-weight: bold; }
+    .scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; z-index: 10; pointer-events: none; }
   </style>
 </head>
 <body>
-
-  <!-- Dynamic header -->
-  <div id="header-placeholder"></div>
-
-  <!-- Dynamic nav -->
-  <div id="nav-placeholder"></div>
-
+  <div class="scanline"></div>
   <main>
-    <!-- LOGIN FORM -->
-    <h2>Login</h2>
+    <h2>System Access</h2>
     <form id="login-form">
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <button type="submit">Login</button>
+      <input type="email" name="email" placeholder="ADMIN_EMAIL" required>
+      <input type="password" name="password" placeholder="ACCESS_CODE" required>
+      <button type="submit">Execute Login</button>
     </form>
-
-    <hr>
-
-    <!-- REGISTER FORM -->
-    <h2>Register</h2>
-    <form id="register-form">
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <button type="submit">Register</button>
-    </form>
-
     <p id="loginStatus"></p>
   </main>
 
-  <!-- Dynamic footer -->
-  <div id="footer-placeholder"></div>
+  <script>
+    // PROJECT 4: Liquid-Injected Auth Logic
+    // This pulls data directly from your _data/auth.json file
+    const authData = {{ site.data.auth | jsonify }};
 
+    const loginForm = document.getElementById('login-form');
+    const loginStatus = document.getElementById('loginStatus');
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = loginForm.email.value.trim();
+      const password = loginForm.password.value;
+
+      // 1. Check if email is in the admin whitelist
+      if (!authData.admins.includes(email)) {
+        loginStatus.style.color = "red";
+        loginStatus.textContent = "UNAUTHORIZED_IDENTITY";
+        return;
+      }
+
+      // 2. Check if email and password match an entry in the users array
+      const user = authData.users.find(u => u.email === email && u.password === password);
+
+      if (user) {
+        loginStatus.style.color = "#00ff41";
+        loginStatus.textContent = "ACCESS_GRANTED. BOOTING...";
+        
+        // Store session locally
+        sessionStorage.setItem('scss_admin_session', email);
+        
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 800);
+      } else {
+        loginStatus.style.color = "red";
+        loginStatus.textContent = "INVALID_CREDENTIALS";
+      }
+    });
+  </script>
 </body>
 </html>
