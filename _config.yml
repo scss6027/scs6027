@@ -1,0 +1,21 @@
+# [ SCSS6027 / FIREBASE SYSTEM CONFIG ]
+title: SCSS6027_TICKET_SYSTEM
+description: Project 4 Migration - Independent Data Vault
+remote_theme: pages-themes/minimal@v0.2.0
+
+# Build Settings
+markdown: kramdown
+highlighter: rouge
+lsi: false
+
+# Data Source Mapping
+# Tells Jekyll where to find your tickets.json and auth.json
+data_dir: _data
+
+# Exclusion list to keep the build clean
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - README.md
