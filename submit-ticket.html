@@ -2,89 +2,164 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Submit Ticket - SCS6027</title>
-
-  <!-- Universal public stylesheet from MAIN -->
+  <title>Submit Ticket Registry - SCSS6027</title>
   <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css">
-
-  <!-- Dynamic includes -->
-  <script src="https://scss6027.github.io/main/include-public.js" defer></script>
-
-  <!-- Authentication & ticket submission logic -->
-  <script src="https://scss6027.github.io/scs6027/js/auth.js" defer></script>
-  <script src="https://scss6027.github.io/scs6027/js/ticket-submit.js" defer></script>
+  
+  <script src="js/auth.js"></script>
+  <script>
+    // SECURITY: Ensure session exists
+    if (!sessionStorage.getItem("consoleAuth")) {
+      window.location.href = "login.html";
+    }
+  </script>
 
   <style>
-    main {
-      max-width: 700px;
-      margin: auto;
-      padding: 20px;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    input, textarea {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #aaa;
-      font-size: 1rem;
-      width: 100%;
-    }
-    button {
-      max-width: 200px;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      background-color: #25d366;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover { background-color: #1aa34a; }
+    body { background-color: #050a05; color: #00ff41; font-family: 'Courier New', monospace; }
+    main { max-width: 700px; margin: 40px auto; padding: 20px; border: 1px solid #00ff41; box-shadow: 0 0 10px #00ff41; background: #000; }
+    h2 { text-align: center; text-decoration: underline; text-transform: uppercase; letter-spacing: 2px; }
+    
+    .security-panel { border: 1px dashed #ff3333; padding: 15px; margin-bottom: 20px; background: #110000; }
+    
+    form { display: flex; flex-direction: column; gap: 15px; }
+    label { font-weight: bold; font-size: 0.9rem; color: #aaa; }
+    input, textarea { padding: 12px; background: #111; border: 1px solid #00ff41; color: #00ff41; font-family: inherit; outline: none; }
+    input:focus, textarea:focus { box-shadow: 0 0 5px #00ff41; }
+    
+    button { padding: 15px; background: #00ff41; color: #000; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
+    button:hover { background: #fff; color: #000; }
+    button:disabled { background: #333; color: #666; cursor: wait; }
 
-    #statusMsg {
-      margin-top: 12px;
-      font-weight: bold;
-    }
-
-    #ticketNumberMsg {
-      margin-top: 12px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #2b00fe;
-    }
+    #statusMsg { margin-top: 20px; font-weight: bold; white-space: pre-wrap; border-top: 1px solid #00ff41; padding-top: 10px; }
+    #ticketNumberMsg { margin-top: 10px; font-size: 1.2rem; color: #fff; text-align: center; }
+    
+    .scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; z-index: 10; pointer-events: none; }
   </style>
 </head>
 <body>
+  <div class="scanline"></div>
+  <main>
+    <h2>NEW_TICKET_SUBMISSION_TERMINAL</h2>
 
-<!-- Dynamic header -->
-<div id="header-placeholder"></div>
+    <!-- Security Gate: Token Input -->
+    <div class="security-panel">
+      <label>ACCESS_TOKEN (ELIYAH-SCSS6027):</label><br>
+      <input type="password" id="gh-token" placeholder="Enter GitHub PAT" style="width: 75%;">
+      <button onclick="lockToken()" style="width: 20%; background: #ff3333; color: white;">LOCK</button>
+    </div>
 
-<!-- Dynamic navigation -->
-<div id="nav-placeholder"></div>
+    <form id="ticket-form">
+      <label>SUBJECT_TITLE:</label>
+      <input type="text" id="subject" placeholder="Summary of the issue" required>
 
-<main>
-  <h2>Submit a Support Ticket</h2>
+      <label>DETAILED_DESCRIPTION:</label>
+      <textarea id="description" rows="6" placeholder="Provide full context here..." required></textarea>
 
-  <form id="ticket-form">
-    <label for="subject">Subject:</label>
-    <input type="text" id="subject" name="subject" placeholder="Enter ticket subject" required>
+      <button type="submit" id="submit-btn">EXECUTE_REGISTRY_COMMIT</button>
+    </form>
 
-    <label for="description">Description:</label>
-    <textarea id="description" name="description" placeholder="Describe your issue" rows="6" required></textarea>
+    <div id="statusMsg">SYSTEM_READY... AWAITING INPUT</div>
+    <div id="ticketNumberMsg"></div>
+  </main>
 
-    <button type="submit">Submit Ticket</button>
-  </form>
+  <script>
+    // GitHub API Configuration
+    const GITHUB_API_URL = "https://api.github.com/repos/SCSS6027/FIREBASE/contents/_data/tickets.json";
+    
+    // User Identity from Session
+    const userEmail = sessionStorage.getItem("consoleAuth");
+    const userName = sessionStorage.getItem("scss_user_name") || "Operator"; // Fallback if name not stored
 
-  <p id="statusMsg"></p>
-  <p id="ticketNumberMsg"></p>
-</main>
+    function lockToken() {
+      const token = document.getElementById('gh-token').value;
+      if (token) {
+        sessionStorage.setItem('temp_pat', token);
+        alert("TOKEN_LOCKED_FOR_SESSION");
+      }
+    }
 
-<!-- Dynamic footer -->
-<div id="footer-placeholder"></div>
+    document.getElementById('ticket-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('statusMsg');
+      const numberMsg = document.getElementById('ticketNumberMsg');
+      const btn = document.getElementById('submit-btn');
+      const pat = sessionStorage.getItem('temp_pat');
 
+      if (!pat) {
+        alert("CRITICAL ERROR: ACCESS_TOKEN_REQUIRED_FOR_COMMIT");
+        return;
+      }
+
+      // Start UI Lock
+      btn.disabled = true;
+      status.style.color = "#00ff41";
+      status.textContent = "INITIALIZING_HANDSHAKE_WITH_GITHUB...";
+
+      try {
+        // 1. GET CURRENT FILE STATE (To get SHA and current IDs)
+        const getRes = await fetch(GITHUB_API_URL, {
+          headers: { "Authorization": `token ${pat}` }
+        });
+        
+        if (!getRes.ok) throw new Error("AUTH_FAILURE: Verify PAT permissions.");
+        
+        const fileData = await getRes.json();
+        const sha = fileData.sha;
+        const tickets = JSON.parse(atob(fileData.content));
+
+        // 2. GENERATE NEW TICKET DATA
+        status.textContent = "CALCULATING_NEXT_TICKET_ID...";
+        
+        // Find highest TicketNumber and add 1
+        const nextId = tickets.length > 0 ? Math.max(...tickets.map(t => t.TicketNumber)) + 1 : 1;
+        const timestamp = new Date().toISOString();
+
+        const newTicket = {
+          TicketNumber: nextId,
+          Name: userName,
+          EmailAddress: userEmail,
+          Description: document.getElementById('description').value,
+          Subject: document.getElementById('subject').value,
+          Status: "Open",
+          Created: timestamp,
+          Updated: timestamp
+        };
+
+        // 3. APPEND AND ENCODE
+        tickets.push(newTicket);
+        status.textContent = "ENCODING_COMMIT_PAYLOAD...";
+        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(tickets, null, 2))));
+
+        // 4. PUSH TO GITHUB
+        const putRes = await fetch(GITHUB_API_URL, {
+          method: "PUT",
+          headers: { 
+            "Authorization": `token ${pat}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: `Register New Ticket #${nextId} via Terminal`,
+            content: updatedContent,
+            sha: sha
+          })
+        });
+
+        if (putRes.ok) {
+          status.textContent = "SUCCESS: GITHUB_REGISTRY_UPDATED.";
+          numberMsg.textContent = `ASSIGNED TICKET_ID: #${nextId}`;
+          alert(`TICKET #${nextId} SUBMITTED SUCCESSFULLY`);
+          document.getElementById('ticket-form').reset();
+        } else {
+          const err = await putRes.json();
+          throw new Error(err.message);
+        }
+
+      } catch (err) {
+        status.style.color = "red";
+        status.textContent = "SYSTEM_FAILURE: " + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
