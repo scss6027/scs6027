@@ -1,85 +1,134 @@
+---
+layout: null
+---
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Modify Ticket - SCS6027</title>
+  <title>Modify Ticket - SCSS6027</title>
 
   <!-- Universal stylesheet -->
   <link rel="stylesheet" href="https://scss6027.github.io/main/style-public.css">
 
+  <!-- SECURITY: Check session before page load -->
+  <script src="js/auth.js"></script>
+  <script>
+    if (!sessionStorage.getItem("consoleAuth")) {
+      window.location.href = "login.html";
+    }
+  </script>
+
   <!-- Dynamic includes -->
   <script src="https://scss6027.github.io/main/include-public.js" defer></script>
 
-  <!-- Auth & Ticket Modify JS -->
-  <script src="https://scss6027.github.io/scs6027/js/auth.js" defer></script>
-  <script src="https://scss6027.github.io/scs6027/js/ticket-modify.js" defer></script>
-
   <style>
-    main {
-      max-width: 700px;
-      margin: auto;
-      padding: 20px;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    body { background-color: #050a05; color: #00ff41; font-family: 'Courier New', monospace; }
+    main { max-width: 700px; margin: auto; padding: 20px; }
+    h2 { text-decoration: underline; text-transform: uppercase; }
+    form { display: flex; flex-direction: column; gap: 15px; border: 1px solid #00ff41; padding: 20px; box-shadow: 0 0 10px #00ff41; background: #000; }
+    label { font-weight: bold; letter-spacing: 1px; }
     input, textarea {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #aaa;
-      font-size: 1rem;
-      width: 100%;
+      padding: 10px; background: #111; border: 1px solid #00ff41; color: #00ff41;
+      font-family: inherit; font-size: 1rem; outline: none;
     }
+    input:focus, textarea:focus { box-shadow: 0 0 8px #00ff41; }
     button {
-      max-width: 200px;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      background-color: #fbbc05;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
+      max-width: 250px; padding: 12px; border: 1px solid #00ff41;
+      background: #00ff41; color: #000; font-weight: bold;
+      font-size: 1rem; cursor: pointer; text-transform: uppercase;
     }
-    button:hover { background-color: #e2a903; }
-
-    #statusMsg {
-      margin-top: 12px;
-      font-weight: bold;
-    }
+    button:hover { background: #008f11; color: #fff; }
+    #statusMsg { margin-top: 15px; font-weight: bold; white-space: pre-wrap; }
+    #logout-btn { float: right; padding: 8px 15px; background: #ff3333; color: white; border: none; cursor: pointer; }
+    .scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; z-index: 10; pointer-events: none; }
   </style>
 </head>
 <body>
+<div class="scanline"></div>
+<button id="logout-btn" onclick="logout()">LOGOUT</button>
 
-<!-- Dynamic header -->
 <div id="header-placeholder"></div>
-
-<!-- Dynamic navigation -->
 <div id="nav-placeholder"></div>
 
 <main>
-  <h2>Modify Your Support Ticket</h2>
+  <h2>Modify Support Ticket Registry</h2>
+  <p>OPERATOR: <span id="op-id" style="color:#fff"></span></p>
 
   <form id="modify-ticket-form">
-    <label for="ticketNumber">Ticket Number:</label>
-    <input type="text" id="ticketNumber" name="ticketNumber" placeholder="Enter your ticket number" required>
+    <label for="ticketNumber">TICKET_NUMBER_ID:</label>
+    <input type="number" id="ticketNumber" name="ticketNumber" placeholder="Enter ID to search..." required>
 
-    <label for="subject">New Subject:</label>
-    <input type="text" id="subject" name="subject" placeholder="Enter new subject" required>
+    <label for="subject">NEW_SUBJECT_LINE:</label>
+    <input type="text" id="subject" name="subject" placeholder="Enter updated subject" required>
 
-    <label for="description">New Description:</label>
-    <textarea id="description" name="description" placeholder="Enter new description" rows="6" required></textarea>
+    <label for="description">NEW_DESCRIPTION_LOG:</label>
+    <textarea id="description" name="description" placeholder="Enter updated description" rows="6" required></textarea>
 
-    <button type="submit">Modify Ticket</button>
+    <button type="submit">EXECUTE_UPDATE</button>
   </form>
 
   <p id="statusMsg"></p>
 </main>
 
-<!-- Dynamic footer -->
 <div id="footer-placeholder"></div>
+
+<script>
+  // 1. INJECT DATA SOURCE
+  const allTickets = {{ site.data.tickets | jsonify }};
+  const userEmail = sessionStorage.getItem("consoleAuth");
+
+  document.getElementById('op-id').textContent = userEmail;
+
+  const modifyForm = document.getElementById('modify-ticket-form');
+  const statusMsg = document.getElementById('statusMsg');
+
+  modifyForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    statusMsg.textContent = "SEARCHING REGISTRY...";
+    statusMsg.style.color = "#00ff41";
+
+    const tNum = parseInt(document.getElementById('ticketNumber').value);
+    const newSubject = document.getElementById('subject').value;
+    const newDesc = document.getElementById('description').value;
+
+    // 2. FIND AND VALIDATE TICKET
+    const ticketIndex = allTickets.findIndex(t => t.TicketNumber === tNum);
+    const ticket = allTickets[ticketIndex];
+
+    if (!ticket) {
+      statusMsg.textContent = "ERROR: TICKET_ID NOT FOUND IN DATABASE.";
+      statusMsg.style.color = "red";
+      return;
+    }
+
+    // 3. SECURITY CHECK: Ensure user owns the ticket
+    if (ticket.EmailAddress.toLowerCase() !== userEmail.toLowerCase()) {
+      statusMsg.textContent = "ACCESS_DENIED: IDENTITY MISMATCH.\nYOU CAN ONLY MODIFY YOUR OWN TICKETS.";
+      statusMsg.style.color = "red";
+      return;
+    }
+
+    // 4. PREPARE GITHUB API PAYLOAD
+    // In Project 4, we replace Firebase .update() with a GitHub Commit.
+    statusMsg.textContent = "TICKET VERIFIED. INITIALIZING GITHUB_API PUSH...";
+    
+    /**
+     * NOTE FOR MONDAY/TUESDAY:
+     * This is where we trigger the GitHub Committer function.
+     * It will take the 'allTickets' array, update the one at 'ticketIndex',
+     * and push the whole JSON back to _data/tickets.json.
+     */
+    console.log("Updated Data Ready:", {
+      ...ticket,
+      Description: newDesc,
+      Subject: newSubject, // Matches your schema
+      Updated: new Date().toISOString()
+    });
+
+    alert("STATION NOTICE: Data prepared for GitHub Commit. Ensure your Personal Access Token (PAT) is loaded in the terminal settings.");
+  });
+</script>
 
 </body>
 </html>
